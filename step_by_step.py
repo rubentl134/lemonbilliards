@@ -73,8 +73,10 @@ s_initial = xy2s_asymmetrical(P,center1,center2,DownLemon - center1,UpLemon - ce
 #exit
 h = 0.01
 s_exit = 0.5
+P_exit0 = s2xy_asym(s_exit,DownLemon,RightLemon,UpLemon,LeftLemon,s_total,s_right,s_left,r2,center2)
 P_exit1 = s2xy_asym(s_exit+h,DownLemon,RightLemon,UpLemon,LeftLemon,s_total,s_right,s_left,r2,center2)
 P_exit2 = s2xy_asym(s_exit-h,DownLemon,RightLemon,UpLemon,LeftLemon,s_total,s_right,s_left,r2,center2)
+plt.plot(P_exit0[0],P_exit0[1],'kd')
 plt.plot(P_exit1[0],P_exit1[1],'kd')
 plt.plot(P_exit2[0],P_exit2[1],'kd')
 
@@ -116,4 +118,9 @@ for i in range(30):
     s = xy2s_asymmetric_2(P,r1,r2,center1,center2,DownLemon,UpLemon,LeftLemon,RightLemon,x_intersection)
     alpha_final = alpha_angle_asymmetrical(hit,vReflex,center1,center2,x_intersection)
     print(s,np.rad2deg(alpha_final),hit)
+    if s > s_exit-h and s < s_exit + h:
+        print(i,'exit at____________________________',s)
+        #print(float(sys.argv[1]),float(sys.argv[2]),i,'OUT')
+        #break
+
 plt.show()

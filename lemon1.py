@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from numba import njit
 def module(v):
     '''
     Returns the module of a 2d-vector v
@@ -156,143 +156,6 @@ def circunference(c,r,num=5000):
     return np.array([x,y])
 
     
-def line(m,b,xi=-1,xf=1,num=5):
-    '''
-    Point-slope equation
-    points to plot a line given the slope and a point 
-    IN:
-    m: slope
-    b: y-intersection
-    xi: initial x of the line (Set to -1)
-    xf: final x of the line (set to 1)
-    OUT:
-    [x,y]: points of the line (set to 5)
-    '''
-    x = np.linspace(xi,xf,num)
-    y = m*x+b
-    return np.array([x,y])
-
-def line_and_circle(p,v,c,R):
-    '''
-    Intersection of a particle which position is p and has velocity v
-    with a circunference.
-    IN:
-    p: (x,y) position
-    v: velocity
-    c: center of the circunference
-    R: radii
-    OUT:
-    sol1, sol2: Two solutions of the line-circunference intersection
-    '''
-    x0,y0 = p[0],p[1] #initial points
-    m = v[1]/v[0] #slope
-    h,k = c[0],c[1]
-
-    A = 1 + m**2
-    B = 2*(-h- x0*m**2 +m*y0 -m*k)
-    C = h**2+m**2*x0**2-2*m*x0*y0+y0**2+2*m*x0*k-2*y0*k+k**2-R**2
-
-    xsol = solve2equation(A,B,C)
-    ysol = m*(xsol-x0)+y0
-    sol1 = xsol[0],ysol[0]
-    sol2 = xsol[1],ysol[1]
-    return sol1,sol2
-
-
-
-def line_circunference_intersection(C,L):
-    '''
-    Intersection between a circunference and a line
-    L: line [slope, [pointx , pointy]] // [pointx,pointy] is a point of the line
-    C: circunference [[centrex,centrey],radius]
-    -------------------------------
-    NEED TO BE FIXED OR DELETED
-    NOT WORKING ON LEMON BILLIARDS
-    -------------------------------
-    '''
-    print('line_circunference_intersection')
-    #L = [m,[x0,y0]]
-    #C = [[h,k],r]
-    
-    m = L[0]
-    P = L[1]
-    x0 = P[0]
-    y0 = P[1]
-    print('slope',m)
-    print('point',P)
-    centre = C[0]
-    h = centre[0]
-    k = centre[1]
-    r = C[1]
-    print('centre',centre)
-    print('h,k',h,k)
-    print('r',r)
-
-    
-    a = (1+m**2)
-    b = -2*(h+m*(x0-y0+k))
-    c = h**2+m*x0*(m*x0-2*y0+2*k)+(y0-k)**2-r**2
-    xsol = solve2equation(a,b,c)
-    ysol = m*(xsol-x0)+y0
-    sol1 = [xsol[0],ysol[0]]
-    sol2 = [xsol[1],ysol[1]]
-    print(sol1)
-    print(sol2)
-    print(10*'---')
-    return sol1,sol2
-
-def line_and_circle(p,v,c,R):
-    '''
-    Line and circunference intersection. This is an improved function.
-    p: (x,y) coordinates of the lemon
-    v: (vx,vy) velocity vector
-    c: (h,k) center coordinates of the circunference
-    R: radiius of the circunference.
-    returns sol1,sol2
-    two solutions, you need to choose the correct one.
-    '''
-    x0,y0 = p[0],p[1] #initial points
-    m = v[1]/v[0] #slope
-    h,k = c[0],c[1]
-
-    A = 1 + m**2
-    B = 2*(-h- x0*m**2 +m*y0 -m*k)
-    C = h**2+m**2*x0**2-2*m*x0*y0+y0**2+2*m*x0*k-2*y0*k+k**2-R**2
-
-    xsol = solve2equation(A,B,C)
-    ysol = m*(xsol-x0)+y0
-    sol1 = xsol[0],ysol[0]
-    sol2 = xsol[1],ysol[1]
-    return sol1,sol2
-
-def belongs_lemon(point,lemonLeft,lemonRight,lemonDown,lemonUp,position):
-    '''
-    Checking if solutions belongs to the lemon
-    IN:
-    point: checking point
-    lemonLeft: lemon left coordinates
-    lemonRight: lemon right coordinates
-    lemonDown: lemon down coordinates
-    lemonUp: lemon up coordinates
-    position: currently position of the particle
-    OUT:
-    belongs: boolean that indicates if point belongs to lemon
-    '''
-    if point[0] > lemonLeft[0] and point[0] < lemonRight[0]:
-        belongs = True
-        if np.abs(point[0] - position[0]) < 10e-8:
-            belongs = False
-        else:
-            belongs = True
-            if point[1] > lemonDown[1] and point[1] < lemonUp[1]:
-                belongs = True
-            else:
-                belongs = False
-
-    else:
-        belongs = False
-    return belongs
-
 
 
 def belongsC1(point,B,R=1,tol=10e-12):
@@ -337,87 +200,7 @@ def belongsC2(point,B,R=1,tol=10e-12):
         val = False
     return val
 
-def belongs_lemon_mod(point,B,lemonLeft,lemonRight,lemonDown,lemonUp,position):
-    '''
-    Checking of solutions belongs to the lemon
-    IN:
-    point: checking point
-    B: distance between centers
-    lemonLeft: lemon left coordinates
-    lemonRight: lemon right coordinates
-    lemonDown: lemon down coordinates
-    lemonUp: lemon up coordinates
-    position: currently position of the particle 
-    OUT:
-    belongs: boolean that indicates if the particle belongs to the lemon
-    '''
-    if (point[0] > lemonLeft[0] and point[0] < lemonRight[0]) and (point[1] > lemonDown[1] and point[1] < lemonUp[1]):
-        belongs = True
-        if np.abs(point[0] - position[0]) < 10e-8:
-            belongs = False
-        else:
-            if point[0] < 0: #lemon left side
-                belongs = belongsC2(point,B)
-            else: #lemon right side
-                belongs = belongsC1(point,B)
 
-    else:
-        belongs = False
-    return belongs
-
-
-def initial_position(B,R):
-    '''
-    Gives a random (x,y) position on the lemon
-    IN:
-    B: distance between center
-    R: radii
-    OUT:
-    [x_random,y_random]: random position on the lemon
-    '''
-    lemonLeft = B-1
-    lemonRight = 1-B
-    x_random = np.random.uniform(lemonLeft,lemonRight)
-    if x_random < 0:
-        y_random = np.sqrt(R**2 - (x_random - B)**2)
-    else:
-        y_random = np.sqrt(R**2 - (x_random + B)**2)
-    return np.array([x_random,y_random]) 
-
-def initial_position2(x,center1,center2,r1,r2,left,center,right,vertical):
-    '''
-    This function gives the coordinates (x,y) position not using a random one
-    vertical: +y axis or -y axis
-    IN:
-    x: x coordinate that belongs to the lemon
-    center1: coordinates of the center of the circunference1 
-    center2: coordinates of the center of the circunference2
-    r1: radii 1
-    r2: radii2
-    left: left lemon coordinates
-    center: center
-    right: right lemon coordinates
-    vertical: + for positive Y or - for negative Y
-    OUT:
-    [x,y]: position on lemon
-    '''
-    h1 = center1[0]
-    h2 = center2[0]
-    if x > left and x < right:
-        if x < center:
-            #left lemon side , C2
-            y = np.sqrt(r2**2 - (x-h2)**2)
-        else:
-            #right lemon side, C1
-            y = np.sqrt(r1**2 - (x-h1)**2)
-    else:
-        print('x must be on the lemon x - range')
-        y=None
-
-    if vertical == '-':
-        y=-y
-
-    return [x,y]
 
 def tangent_vector_circunference(P,center):
     '''
@@ -507,18 +290,6 @@ def alpha_angle_asymmetrical(P,v,center1,center2,x_intersection):
     return angle_bw_vectors(v,T)
     
 
-def velocity(P,alpha,center):
-    '''
-    Velocity vector after collision
-    IN:
-    P: point of collision
-    alpha: alpha angle
-    center: center of the circunference
-    OUT:
-    velocity vector
-    '''
-    T = tangent_vector_circunference(P,center)
-    return unitary(rotation(T,alpha))
 
 
 def angle_bw_vectors(v1,v2):
@@ -534,28 +305,6 @@ def angle_bw_vectors(v1,v2):
     return angle
 
 
-def reflexVelocity(hit,velocity,center1,center2):
-    '''
-    reflexion at a line considering a normal vector n
-    v-(2v.n)n
-    IN:
-    hit: collision point
-    velocity: velocity vector
-    center1: center od circunference1
-    center2: center of circunference2
-    OUT:
-    reflex: reflexion velocity
-    '''
-    if hit[0]>0: #lemon right side
-        normal =unitary(center1 - hit)
-    elif hit[0]<0: #lemon left side
-        normal =unitary(center2 - hit)
-    else:
-        print('problems on reflexVelocity function')
-        
-    reflex = np.float128(velocity - (np.dot(2*velocity,normal))*normal) #vector velocidad reflexion
-        
-    return reflex	
 
 def reflexVelocity_asymmetric(hit,velocity,center1,center2,x_intersection):
     '''
@@ -582,80 +331,7 @@ def reflexVelocity_asymmetric(hit,velocity,center1,center2,x_intersection):
     return reflex	
 
 
-def xy2s(P,center1,center2,fix1,fix2,theta1,radius=1):
-    '''
-    converting from (x,y) coordinates to s coordinates
-    IN: 
-    P: collision point
-    center1: center circunference1
-    center2: center circunference2
-    fix1: auxiliary line
-    fix2: auxiliary line
-    theta1: auxiliary angle
-    radius:radii set to 1
-    OUT:
-    s: s coordinate
-    '''
-    r1 = P - center1
-    r2 = P - center2
-    if P[0] > 0: # lemon right side
-        beta1 = angle_bw_vectors(fix1,r1)
-        #print('beta1',beta1)
-        s = radius*beta1
-    elif P[0] < 0:#lemon left side
-        beta2 = angle_bw_vectors(fix2,r2)
-        #print('beta2',beta2)
-        s= 2*theta1 + radius*beta2
-    else:
-        print('error on xy2s() function')
-        return None
-    
-    return s
 
-def xy2s_asymmetrical(P,center1,center2,fix1,fix2,x_intersection,r1,r2,DownLemon,UpLemon,LeftLemon):
-    '''
-    In the asymmetrical lemon, this function transform de (x,y) coordinates to the s coordinates
-    IN:
-    P: point on lemon
-    center1: center circunference1
-    center2: center circunference2
-    fix1: auxiliary line
-    fix2: auxiliary line
-    x_intersection: vertical lemon line
-    r1: radii 1
-    r2: radii 1
-    DownLemon: down lemon
-    UpLemon: up lemon
-    LeftLemon: left lemon
-    OUT:
-    s: s coordinates
-    '''
-    #print('---------------------------------------')
-    #print('s calculation')
-    R1 = P - center1
-    R2 = P - center2
-    s1 = r1*angle_bw_vectors(DownLemon-center1,UpLemon-center1)
-    #s2 = r2*angle_bw_vectors(UpLemon-center2,DownLemon-center2)
-    s2 = 2*angle_bw_vectors(UpLemon-center2,LeftLemon-center2)
-    sTotal = s1+s2
-    #print('sTotal',sTotal)
-    if P[0] > x_intersection:
-        beta1 = angle_bw_vectors(fix1,R1)
-        s = r1*beta1
-        #print('beta1',np.rad2deg(beta1))
-        #print('s',s)
-    elif P[0] < x_intersection:
-        beta2 = angle_bw_vectors(fix2,R2)
-        s = s1 + r2*beta2
-        #print('beta2',np.rad2deg(beta2))
-        #print('s',s)
-        if P[1] < 0: #down region
-            s = s1 + r2*angle_bw_vectors(UpLemon-center2,LeftLemon-center2) + r2*angle_bw_vectors(LeftLemon - center2, R2)
-    else:
-        print('error')
-    #print('s/sTtotal',s/sTotal)
-    return s/sTotal
-    
     
 def xy2s_asymmetric_2(P,r1,r2,center1,center2,DownLemon,UpLemon,LeftLemon,RightLemon,x_intersection):
     '''
@@ -768,43 +444,6 @@ def belongs_asymmetrical_lemon(point,position,UpLemon,DownLemon,LeftLemon,RightL
             is_hit = False
     return is_hit
 
-def s2xy(s,DownLemon,RightLemon,UpLemon,LeftLemon,s_total,s_right,s_left,R2,center2,R1=1):
-    '''
-    NOT READY FUNCTIONS :(
-    from s to (x,y) coordinates
-    R1 set to 1 ALWAYS!!
-    '''
-    print('this is s2xy() function')
-    print('s:',s)
-    if s > 0 and s <= 0.5: #right half
-        print('we are on right half')
-        if s <= 0.25: #down 
-            print('down side')
-            #s_true = (s_right*2) * s
-            angle = s/R1
-            pos = rotation(DownLemon,angle)
-        else:
-            print('up side')
-            #s_true =  (s_right*2)*(s-0.25)
-            angle = s/R1
-            pos = rotation(RightLemon,angle)
-    elif s > 0.5 and s <= 1: #left half
-        print('we are on left half')
-        if s <= 0.75:
-            print('up side')
-            s_true = (s_left*2)*(s-0.5)
-            angle = s_true/R2
-            pos = rotation(UpLemon-center2,angle) + np.array([center2[0],0])
-        else:
-            print('down side')
-            s_true = (s_left*2)*(s-0.75)
-            angle = s_true/R2
-            pos = rotation(LeftLemon-center2,angle) + np.array([center2[0],0])
-    else:
-        print('ERROR ON s2xy() function')
-        pos = None
-        
-    return pos
 
 def s2xy_asym(s,DownLemon,RightLemon,UpLemon,LeftLemon,s_total,s_right,s_left,R2,center2,R1=1):
     '''

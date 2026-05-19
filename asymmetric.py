@@ -90,7 +90,7 @@ v = velocity_lemon(P,center1,center2,x_intersection,alpha)
 h = 0.01
 s_exit = 0.5
 
-MAX_ITER = 10000
+MAX_ITER = 100
 
 for i in range(MAX_ITER):
     #print(10*'----')
