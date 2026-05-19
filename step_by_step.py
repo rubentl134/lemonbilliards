@@ -7,16 +7,16 @@ import matplotlib.pyplot as plt
 from lemon1 import *
 
 print('WELCOME TO LEMON BILLIARDS')
-
+print('This a version that shows the trajectory of the particle after n iterations')
 plt.hlines(y=0,xmin=-2,xmax=2,color='red')
 plt.vlines(x=0,ymin=-2,ymax=2,color='red')
 
 #circunferences
 center1 = np.array([0,0]) # this is set to (0,0)
-center2 = np.array([1.08,0]) # need to be changed
+center2 = np.array([0.4,0]) # need to be changed
 
 r1 = 1
-r2 = 0.4
+r2 = 0.8
 C1 = circunference(center1,r1)
 C2 = circunference(center2,r2)
 
@@ -51,40 +51,44 @@ plt.text(RightLemon[0]+0.01,RightLemon[1]-0.1,'RightLemon')
 plt.plot(LeftLemon[0],LeftLemon[1],'go')
 plt.text(LeftLemon[0]-0.2,LeftLemon[1]-0.1,'LeftLemon')
 
-#auxiliary calculations
-#fix1 = DownLemon - center1
-#fix2 = UpLemon - center2
-# s length calculations
-#s_angle_right =angle_bw_vectors(DownLemon-center1,UpLemon-center1)
-#s_angle_left =angle_bw_vectors(UpLemon-center2,DownLemon-center2)
-#s_right = r1*angle_bw_vectors(DownLemon-center1,UpLemon-center1)
-#s_left = r2*angle_bw_vectors(UpLemon-center2,DownLemon-center2)
 s_total = r1*angle_bw_vectors(DownLemon-center1,UpLemon-center1) + r2*angle_bw_vectors(UpLemon-center2,DownLemon-center2)
+s_angle_right =angle_bw_vectors(DownLemon-center1,UpLemon-center1)
+s_angle_left =angle_bw_vectors(UpLemon-center2,DownLemon-center2)
 
+s_right = r1*s_angle_right
+s_left = r2*s_angle_left
+
+#####################################################################################
 ### initial conditions
-#position
-x = 0.85
-P = initial_position2(x,center1,center2,r1,r2,LeftLemon[0],x_intersection,RightLemon[0],'-')
+#s and alpha
+s=0.1 #from 0 to 1
+alpha=np.deg2rad(10) #in degrees
+P = s2xy_asym(s,DownLemon,RightLemon,UpLemon,LeftLemon,s_total,s_right,s_left,r2,center2)
 plt.plot(P[0],P[1],'kX')
 #velocity
-alpha=np.deg2rad(100)
 v = velocity_lemon(P,center1,center2,x_intersection,alpha)
 s_initial = xy2s_asymmetrical(P,center1,center2,DownLemon - center1,UpLemon - center2,x_intersection,r1,r2,DownLemon,UpLemon,LeftLemon)
+
+###########################################################################################
+#exit
+h = 0.01
+s_exit = 0.5
+P_exit1 = s2xy_asym(s_exit+h,DownLemon,RightLemon,UpLemon,LeftLemon,s_total,s_right,s_left,r2,center2)
+P_exit2 = s2xy_asym(s_exit-h,DownLemon,RightLemon,UpLemon,LeftLemon,s_total,s_right,s_left,r2,center2)
+plt.plot(P_exit1[0],P_exit1[1],'kd')
+plt.plot(P_exit2[0],P_exit2[1],'kd')
+
+############################################################################################
+
+
 
 plt.arrow(P[0],P[1],v[0]*0.2,v[1]*0.2,color='green',width=0.01)
 
 
-for i in range(10):
+for i in range(30):
     #intersecion
     c1_intersection = line_and_circle(P,v,center1,r1)
-    #plt.plot([c1_intersection[0][0],c1_intersection[1][0]],[c1_intersection[0][1],c1_intersection[1][1]],linestyle='dashed')
-
     c2_intersection = line_and_circle(P,v,center2,r2)
-
-    #plt.plot(c2_intersection[0][0],c2_intersection[0][1],'kd')
-    #plt.plot(c2_intersection[1][0],c2_intersection[1][1],'kd')
-    #plt.plot([c2_intersection[0][0],c2_intersection[1][0]],[c2_intersection[0][1],c2_intersection[1][1]],linestyle='dashed')
-
     #which is the correct intersection point?
     #print(20*'---')
     candidates = [c1_intersection[0],c1_intersection[1],c2_intersection[0],c2_intersection[1]]
@@ -111,9 +115,5 @@ for i in range(10):
     #print('hit',hit)
     s = xy2s_asymmetric_2(P,r1,r2,center1,center2,DownLemon,UpLemon,LeftLemon,RightLemon,x_intersection)
     alpha_final = alpha_angle_asymmetrical(hit,vReflex,center1,center2,x_intersection)
-    print(s,np.rad2deg(alpha_final))
-
-
-
-
+    print(s,np.rad2deg(alpha_final),hit)
 plt.show()

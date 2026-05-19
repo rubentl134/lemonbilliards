@@ -87,8 +87,8 @@ v = velocity_lemon(P,center1,center2,x_intersection,alpha)
 #plt.arrow(P[0],P[1],v[0],v[1],color='green')
 
 #survival
-h = 0.1
-s_exit = 0.05
+h = 0.01
+s_exit = 0.5
 
 MAX_ITER = 10000
 
@@ -142,6 +142,7 @@ for i in range(MAX_ITER):
         #break
 
     if s > s_exit-h and s < s_exit + h:
+        print('exit at',s)
         print(float(sys.argv[1]),float(sys.argv[2]),i,'OUT')
         break
 
