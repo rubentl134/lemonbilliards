@@ -569,17 +569,17 @@ def step(s,alpha,s_exit,h,MAX_ITER):
     #plt.show()
 
 
-print('test')
+#print('test')
 #initial position
 
-s = 0.1
-alpha=np.deg2rad(20)
+#s = 0.1
+#alpha=np.deg2rad(20)
 
 #survival
-s_exit = 0.50 #hole position
-h = 0.1 #hole width
+#s_exit = 0.50 #hole position
+#h = 0.1 #hole width
 
 #max number of iterations
-MAX_ITER = 100
+#MAX_ITER = 100
 
-step(s,alpha,s_exit,h,MAX_ITER)
+#step(s,alpha,s_exit,h,MAX_ITER)

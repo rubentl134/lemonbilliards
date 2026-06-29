@@ -462,3 +462,107 @@ def s2xy_asym(s,DownLemon,RightLemon,UpLemon,LeftLemon,s_total,s_right,s_left,R2
         angle = ((s-right_rate)*s_total)/R2
         pos = rotation(UpLemon-center2,angle) + np.array([center2[0],0])
     return pos
+    
+    
+def step(s,alpha,s_exit,h,MAX_ITER):
+    '''
+    THIS IS ASYMMETRIC LEMON BILLIARDS
+    CHECKING FOR THE R1=R2=1 case
+    '''
+
+    #scenario
+    #plt.hlines(y=0,xmin=-2,xmax=2,color='red')
+    #plt.vlines(x=0,ymin=-2,ymax=2,color='red')
+
+    #circunferences
+    center1 = np.array([0,0])
+    center2 = np.array([0.2,0])
+    #print('B=',np.abs(center1[0])+np.abs(center2[0]))
+    r1 = 1
+    r2 = 1
+    C1 = circunference(center1,r1)
+    C2 = circunference(center2,r2)
+
+    #plt.plot(C1[0],C1[1],color='blue')
+    #plt.plot(C2[0],C2[1],color='blue')
+
+    x_intersection = asymmetric_x_intersection(center1,r1,center2,r2)
+    y_intersection = (r1**2 - (x_intersection - center1[0])**2)**0.5  #this has two values and we are going to use de + and the -
+
+    UpLemon = [x_intersection, y_intersection]
+    DownLemon = [x_intersection, -y_intersection]
+
+    RightLemon = right(center1,r1)
+
+    LeftLemon = left(center2,r2)
+
+    fix1 = DownLemon - center1
+    fix2 = UpLemon - center2
+    s_angle_right =angle_bw_vectors(DownLemon-center1,UpLemon-center1)
+    s_angle_left =angle_bw_vectors(UpLemon-center2,DownLemon-center2)
+    s_right = r1*s_angle_right
+    s_left = r2*s_angle_left
+    s_total = s_right + s_left
+
+    #position
+
+    s_initial = s
+    P = s2xy_asym(s,DownLemon,RightLemon,UpLemon,LeftLemon,s_total,s_right,s_left,r2,center2)
+
+    #plt.plot(P[0],P[1],'kX')
+
+    #velocity
+    alpha_initial = alpha
+    v = velocity_lemon(P,center1,center2,x_intersection,alpha)
+
+
+    #plot hole
+    P_exit1 = s2xy_asym(s_exit+h,DownLemon,RightLemon,UpLemon,LeftLemon,s_total,s_right,s_left,r2,center2)
+    P_exit2 = s2xy_asym(s_exit-h,DownLemon,RightLemon,UpLemon,LeftLemon,s_total,s_right,s_left,r2,center2)
+    #plt.plot(P_exit1[0],P_exit1[1],'ko')
+    #plt.plot(P_exit2[0],P_exit2[1],'ko')
+
+
+    for i in range(MAX_ITER):
+
+        #intersecion
+        c1_intersection = line_and_circle(P,v,center1,r1)
+
+        c2_intersection = line_and_circle(P,v,center2,r2)
+
+        #which is the correct intersection point?
+        #print(20*'---')
+        candidates = [c1_intersection[0],c1_intersection[1],c2_intersection[0],c2_intersection[1]]
+        val_count = 0
+        for k in range(len(candidates)):
+            val = belongs_asymmetrical_lemon(candidates[k],P,UpLemon,DownLemon,LeftLemon,RightLemon,x_intersection,center1,r1,center2,r2)
+            if val == True:
+                val_count =+ 1
+                hit = candidates[k]
+                #print('hit at:',hit)
+        if val_count != 1:
+            #checking there is one solution
+            print('DIFFERENTS SOLUCIOTN POINTS! CHECK IT')
+
+        #velocity
+        vReflex = reflexVelocity_asymmetric(hit,v,center1,center2,x_intersection)
+
+        plt.plot([P[0],hit[0]],[P[1],hit[1]],color='skyblue',alpha = 0.6)
+        #update
+        P = hit
+        v = vReflex
+
+        #print('hit',hit)
+        s = xy2s_asymmetric_2(P,r1,r2,center1,center2,DownLemon,UpLemon,LeftLemon,RightLemon,x_intersection)
+        alpha_final = alpha_angle_asymmetrical(hit,vReflex,center1,center2,x_intersection)
+        #print(s,alpha_final)
+
+        #SURVIVE STUFF
+        if s > s_exit-h and s < s_exit + h:
+            print(s_initial,alpha_initial,i+1,'SCAPED')
+            break
+
+
+    if i == MAX_ITER-1 :
+        print(s_initial,alpha_initial,i+1,'SURVIVOR')
+
