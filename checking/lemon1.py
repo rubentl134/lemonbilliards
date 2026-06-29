@@ -547,7 +547,7 @@ def step(s,alpha,s_exit,h,MAX_ITER):
         #velocity
         vReflex = reflexVelocity_asymmetric(hit,v,center1,center2,x_intersection)
 
-        plt.plot([P[0],hit[0]],[P[1],hit[1]],color='skyblue',alpha = 0.6)
+        #plt.plot([P[0],hit[0]],[P[1],hit[1]],color='skyblue',alpha = 0.6)
         #update
         P = hit
         v = vReflex
